@@ -577,7 +577,7 @@ class DicomSeries(object):
         """ sort()
         Sort the datasets by instance number.
         """
-        self._datasets.sort(key=lambda k: k.InstanceNumber)
+        self._datasets._list.sort(key=lambda k: k.InstanceNumber)
 
     def _finish(self):
         """ _finish()
