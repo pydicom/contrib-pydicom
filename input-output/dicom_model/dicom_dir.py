@@ -6,7 +6,7 @@ a list of Patients with Studies, Series, and Instances for each.
 run with
 ./dicom_dir -d directory --recursive
 
-This example just prints out the patient/study/series/instance heirarchy
+This example just prints out the patient/study/series/instance hierarchy
 """
 
 # Copyright (c) 2017 Robert Haxton
