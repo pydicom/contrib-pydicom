@@ -1,4 +1,19 @@
 #!/usr/bin/env python
+"""
+This example will read a directory of dicom files and parse them into
+a list of Patients with Studies, Series, and Instances for each.
+
+run with
+./dicom_dir -d directory --recursive
+
+This example just prints out the patient/study/series/instance heirarchy
+"""
+
+# Copyright (c) 2017 Robert Haxton
+# This file is part of pydicom, released under a modified MIT license.
+#    See the file LICENSE included with this distribution, also
+#    available at https://github.com/pydicom/pydicom
+
 from __future__ import print_function
 import os
 import argparse
