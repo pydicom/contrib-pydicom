@@ -45,6 +45,14 @@ def get_LUT_value(data, window, level):
         raise ImportError("Numpy is not available."
                           "See http://numpy.scipy.org/"
                           "to download and install")
+    try:
+        window = window[0]
+    except TypeError:
+        pass
+    try:
+        level = level[0]
+    except TypeError:
+        pass
 
     return np.piecewise(data,
                         [data <= (level - 0.5 - (window - 1) / 2),
