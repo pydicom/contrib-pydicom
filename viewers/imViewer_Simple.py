@@ -21,11 +21,12 @@
 # as 'list' type - crude, but it worked for a bunch of old MR and
 # CT slices I have.
 #
-# Testing:      minimal
-#               Tried only on WinXP sp2 using numpy 1.3.0
-#               and PIL 1.1.7b1, Python 2.6.4, and wxPython 2.8.10.1
+# Testing:      moderate
+#               Tested on Windows 7 and MacOS 10.13 using numpy 1.15.2,
+#               Pillow 5.2.0, Python 2.7.13 / 3.6.5, and wxPython 4.0.3
 #
-# Dave Witten:  Nov. 11, 2009
+# Originally written by Dave Witten:  Nov. 11, 2009
+# Updated by Aditya Panchal: Oct. 9, 2018
 # ===================================================================
 
 import pydicom
@@ -71,7 +72,7 @@ class ImFrame(wx.Frame):
             id=-1,
             title="",
             pos=wx.DefaultPosition,
-            size=wx.Size(w=1024, h=768),
+            size=wx.Size(1024, 768),
             style=style)
 
         # --------------------------------------------------------
@@ -81,7 +82,7 @@ class ImFrame(wx.Frame):
 
         # Make the 'File' menu.
         menu = wx.Menu()
-        item = menu.Append(wx.ID_ANY, '&Open', 'Open file for editing')
+        item = menu.Append(wx.ID_ANY, '&Open...\tCtrl+O', 'Open file for editing')
         self.Bind(wx.EVT_MENU, self.OnFileOpen, item)
         item = menu.Append(wx.ID_ANY, 'E&xit', 'Exit Program')
         self.Bind(wx.EVT_MENU, self.OnFileExit, item)
@@ -93,7 +94,7 @@ class ImFrame(wx.Frame):
         # --------------------------------------------------------
         # Set up the main splitter window.
         # --------------------------------------------------------
-        self.mainSplitter = wx.SplitterWindow(self, style=wx.NO_3D | wx.SP_3D)
+        self.mainSplitter = wx.SplitterWindow(self)
         self.mainSplitter.SetMinimumPaneSize(1)
 
         # -------------------------------------------------------------
@@ -173,7 +174,7 @@ class ImFrame(wx.Frame):
     def OnFileOpen(self, event):
         """Opens a selected file."""
         msg = 'Choose a file to add.'
-        dlg = wx.FileDialog(self, msg, '', '', '*.*', wx.OPEN)
+        dlg = wx.FileDialog(self, msg, '', '', '*.*', wx.FD_OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             fullPath = dlg.GetPath()
             imageFile = dlg.GetFilename()
@@ -189,7 +190,7 @@ class ImFrame(wx.Frame):
         dc.SetBackground(wx.Brush("WHITE"))
         dc.Clear()
         dc.SetBrush(wx.Brush("GREY", wx.CROSSDIAG_HATCH))
-        windowsize = self.imView.GetSizeTuple()
+        windowsize = self.imView.GetSize()
         dc.DrawRectangle(0, 0, windowsize[0], windowsize[1])
         bmpX0 = 0
         bmpY0 = 0
@@ -220,13 +221,13 @@ class ImFrame(wx.Frame):
     def ConvertPILToWX(self, pil, alpha=True):
         """ Convert PIL Image Into wx.Image. """
         if alpha:
-            image = wx.EmptyImage(*pil.size)
-            image.SetData(pil.convert("RGB").tostring())
-            image.SetAlphaData(pil.convert("RGBA").tostring()[3::4])
+            image = wx.Image(pil.size[0], pil.size[1], clear=True)
+            image.SetData(pil.convert("RGB").tobytes())
+            image.SetAlpha(pil.convert("RGBA").tobytes()[3::4])
         else:
-            image = wx.EmptyImage(pil.size[0], pil.size[1])
+            image = wx.Image(pil.size[0], pil.size[1], clear=True)
             new_image = pil.convert('RGB')
-            data = new_image.tostring()
+            data = new_image.tobytes()
             image.SetData(data)
         return image
 
@@ -317,7 +318,7 @@ class ImFrame(wx.Frame):
             self.dImage = self.loadPIL_LUT(ds)
             if self.dImage is not None:
                 tmpImage = self.ConvertPILToWX(self.dImage, False)
-                self.bitmap = wx.BitmapFromImage(tmpImage)
+                self.bitmap = wx.Bitmap(tmpImage)
                 self.Refresh()
 
 
