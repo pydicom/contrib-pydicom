@@ -8,6 +8,9 @@ Usage:
 >>> ds = pydicom.read_file("filename")
 >>> show_PIL(ds)
 
+Or from the command line:
+python pydicom_PIL.py <<filename>>
+
 Requires Numpy:
     http://numpy.scipy.org/
 
@@ -110,3 +113,10 @@ def show_PIL(dataset):
     """Display an image using the Python Imaging Library (PIL)"""
     im = get_PIL_image(dataset)
     im.show()
+
+
+if __name__ == '__main__':
+    import pydicom
+    import sys
+    ds = pydicom.read_file(sys.argv[1])
+    show_PIL(ds)
