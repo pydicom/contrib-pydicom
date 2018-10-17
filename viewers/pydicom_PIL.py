@@ -117,6 +117,29 @@ def show_PIL(dataset):
 
 if __name__ == '__main__':
     import pydicom
+    import argparse
     import sys
-    ds = pydicom.read_file(sys.argv[1])
-    show_PIL(ds)
+    import os.path
+
+    # Set up argparser to parse the command-line arguments
+    class DefaultParser(argparse.ArgumentParser):
+        """Custom argparse class."""
+
+        def error(self, message):
+            """Default error handler."""
+            sys.stderr.write('error: %s\n' % message)
+            self.print_help()
+            sys.exit(2)
+
+    parser = DefaultParser(
+        description="View DICOM images using the Python Image Library.")
+    parser.add_argument(
+        "filename", help="Filename of DICOM image")
+
+    args = parser.parse_args()
+
+    if os.path.isfile(args.filename):
+        ds = pydicom.read_file(args.filename)
+        show_PIL(ds)
+    else:
+        parser.error('%s is not a valid file.' % args.filename)
