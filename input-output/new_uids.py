@@ -80,8 +80,6 @@ if len(args.org_root) > 63:
 all_fpath = []
 for root, dirs, files in os.walk(args.directory):
     for fname in files:
-        # The full path to the directory containing the file
-        fdir = os.path.abspath(root)
         # The full path to each file
         all_fpath.append(os.path.abspath(os.path.join(root, fname)))
 
