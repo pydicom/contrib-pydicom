@@ -72,8 +72,6 @@ ALL_STUDY_UIDS = {}
 ALL_SERIES_UIDS = {}
 ALL_FOR_UIDS = {}
 
-# <org root> must be less than 63 characters long and warn if longer than 58
-# characters
 if len(args.org_root) > 63:
     sys.exit("The <org root> value must be less than 64 characters long")
 
