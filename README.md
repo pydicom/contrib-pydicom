@@ -16,7 +16,7 @@ You will notice topic folders in the base of the repo, and these generally coinc
 that pydicom provides:
 
 - [databases](databases): databases specific for pydicom, or using pydicom in databases
-- [input-output](input_output): working with different file formats, or anything related to io, input, or output
+- [input-output](input-output): working with different file formats, or anything related to io, input, or output
 - [metadata-processing](metadata-processing): manipulation of image headers and metadata 
 - [plotting-visualization](plotting-visualization): visualization of pydicom data, not including traditional medical viewers
 - [viewers](viewers): traditional (medical) viewers that work with pydicom
