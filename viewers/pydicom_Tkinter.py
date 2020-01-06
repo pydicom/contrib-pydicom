@@ -147,16 +147,15 @@ def get_tkinter_photoimage_from_pydicom_image(data):
 
     # overwrite with specific values from data, if available
     if ('WindowCenter' in data) and ('WindowWidth' in data):
-        wc = data.WindowCenter
-        ww = data.WindowWidth
         try:
-            wc = wc[0]  # can be multiple values
+            ew = data['WindowWidth']
+            ec = data['WindowCenter']
+            wc = int(ew.value[0] if ew.VM > 1 else ew.value)
+            ww = int(ec.value[0] if ec.VM > 1 else ec.value)
         except Exception:
-            pass
-        try:
-            ww = ww[0]
-        except Exception:
-            pass
+            wc = (arr.max() + arr.min()) / 2.0
+            ww = arr.max() - arr.min() + 1.0
+
 
     # scale array to account for center, width and PGM grayscale range,
     # and wrap into PGM formatted ((byte-) string
