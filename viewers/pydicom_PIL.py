@@ -93,7 +93,7 @@ def get_PIL_image(dataset):
         ec = dataset['WindowCenter']
         ww = int(ew.value[0] if ew.VM > 1 else ew.value)
         wc = int(ec.value[0] if ec.VM > 1 else ec.value)
-        image = self.get_LUT_value(dataset.pixel_array, ww, wc)
+        image = get_LUT_value(dataset.pixel_array, ww, wc)
         # Convert mode to L since LUT has only 256 values:
         #   http://www.pythonware.com/library/pil/handbook/image.htm
         im = PIL.Image.fromarray(image).convert('L')
