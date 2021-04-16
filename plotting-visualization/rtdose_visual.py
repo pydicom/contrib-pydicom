@@ -6,20 +6,15 @@ Created on Wed Mar 31 10:45:06 2021
 @author: Fernando Hueso González
 """
 import pydicom
+from pydicom import  uid
 import matplotlib.pyplot as plt
 import os
 import numpy as np
+import gzip
+import sys
+
 #!/usr/bin/python
 
-# Define the path folder where the file is and the global variables
-path = ''
-dirs = os.listdir( path )
-global gaxis
-gaxis= 0 %2
-global cMin, cMax,cMap
-cMap = 'turbo'
-cMin = None
-cMax = None
 
 #Here we define the functions that we are gona use in our program
 def remove_keymap_conflicts(new_keys_set):
@@ -60,6 +55,7 @@ def multi_slice_viewer(volume):
     fig, ax = plt.subplots()
     ax.volume = volume
     ax.index = volume.shape[0] // 2
+    ax.axis = 0
     ax.imshow(volume[ax.index,:,:],cMap, vmin=cMin, vmax=cMax)
     fig.canvas.mpl_connect('key_press_event', process_key)
     
@@ -77,33 +73,23 @@ def process_key(event):
     None.
 
     """
-    global gaxis 
+   
     fig = event.canvas.figure
     ax = fig.axes[0]
- 
     
     if event.key == 'p':
-        previous_slice(ax,gaxis)
-        draw(ax,gaxis,False)
+        previous_slice(ax)
+        draw(ax,False)
     elif event.key == 'n':
-        next_slice(ax,gaxis)
-        draw(ax,gaxis,False)
+        next_slice(ax)
+        draw(ax,False)
     elif event.key == 'c':
-        "Change the axis of view"
-        if gaxis == 0:
-            gaxis=1
-        elif gaxis == 1:
-            gaxis=2
-        elif gaxis == 2:
-            gaxis=0
-        
-        ax.index = (ax.index ) % ax.volume.shape[gaxis]
-        del ax.images[0]
-        draw(ax,gaxis,True)
+        change_axis(ax) 
+        draw(ax,True)
 
     fig.canvas.draw_idle()
 
-def draw(ax,axis,changing):
+def draw(ax,changing):
     """
     Draws the new plot once the key input has changed the settings 
 
@@ -111,8 +97,7 @@ def draw(ax,axis,changing):
     ----------
     ax : matplotlib.axes._subplots.AxesSubplot
         Subplot made by matplotlib.
-    axis : int
-        An integer number that defines which axis we are plotting.
+
     changing : Boole
         A boole variable that remains False unless we change the axis we are plotting.
 
@@ -122,27 +107,29 @@ def draw(ax,axis,changing):
 
     """
     volume= ax.volume
-    if axis== 0:
+    if ax.axis== 0:
         if changing:
+            del ax.images[0] #this is needed in order to avoid making a new plot in ax.images[1]
             ax.imshow(volume[ax.index,:,:],cMap, vmin=cMin, vmax=cMax)
-            
         else:
             ax.images[0].set_array(volume[ax.index,:,:])
        
-    elif axis== 1:
+    elif ax.axis== 1:
         if changing:
+            del ax.images[0]
             ax.imshow(volume[:,ax.index,:],cMap, vmin=cMin, vmax=cMax)
         else:
             ax.images[0].set_array(volume[:,ax.index,:])
     
-    elif axis == 2:
+    elif ax.axis == 2:
          if changing:
+            del ax.images[0]             
             ax.imshow(volume[:,:,ax.index],cMap, vmin=cMin, vmax=cMax)
          else:
             ax.images[0].set_array(volume[:,:,ax.index])
        
 
-def previous_slice(ax,axis):
+def previous_slice(ax):
     """
     Go to the previous slice.
 
@@ -150,9 +137,7 @@ def previous_slice(ax,axis):
     ----------
     ax : matplotlib.axes._subplots.AxesSubplot
         Subplot made by matplotlib.
-    axis : int
-        An integer number that defines which axis we are plotting.
-
+        
     Returns
     -------
     None.
@@ -160,9 +145,9 @@ def previous_slice(ax,axis):
     """
    
     volume = ax.volume
-    ax.index = (ax.index - 1) % volume.shape[axis]  # wrap around using %
+    ax.index = (ax.index - 1) % volume.shape[ax.axis]  # wrap around using %
     
-def next_slice(ax,axis):
+def next_slice(ax):
     """
     Go to the next slice.
 
@@ -170,8 +155,6 @@ def next_slice(ax,axis):
     ----------
     ax : matplotlib.axes._subplots.AxesSubplot
         Subplot made by matplotlib.
-    axis : int
-        An integer number that defines which axis we are plotting.
 
     Returns
     -------
@@ -179,21 +162,99 @@ def next_slice(ax,axis):
 
     """
     volume = ax.volume
-    ax.index = (ax.index + 1) % volume.shape[axis]
+    ax.index = (ax.index + 1) % volume.shape[ax.axis]
+
+def change_axis(ax):
+    """
+    Changes the axis of view
+
+    Parameters
+    ----------
+    ax : matplotlib.axes._subplots.AxesSubplot
+        Subplot made by matplotlib.
+    Returns
+    -------
+    None.
+
+    """
+    volume = ax.volume
+    ax.axis = (ax.axis + 1) % 3
+    ax.index = volume.shape[ax.axis] // 2
+
+# Define the path folder where the file is , or directly the RTdose full file name
+path = "RD.1.2.246.352.71.7.2088656855.452097.20110920152341.dcm"
+#path = 'C:/Users/kpiqu/OneDrive - Universitat de Valencia/Máster Física Médica/TFM/Comienzos PyDICOM/Prueba Archivo RTDOSE/eclipse-8.1.20-phantom-breast/Original'
+global cMin, cMax,cMap
+cMap = 'turbo'
+cMin = None
+cMax = None
 
 
 # This would print all the files and directories
-for file in dirs:
-  ds = pydicom.dcmread(path+"/"+file)
-  if ds.file_meta.MediaStorageSOPClassUID == '1.2.840.10008.5.1.4.1.1.481.2':
-      print("The RTDose file is named:",file)
-      dose = ds.pixel_array.astype('float')
-      dose *= ds.DoseGridScaling
-      print("The value of the dose is: ",np.max(dose),'Gy')
-      print("To go to the previous slice press 'p'")
-      print("To go to the next slice press 'n'")
-      print("To change the axis of view press 'c'")
-      
-      multi_slice_viewer(dose)
-print("Process finished. If the program has not plotted the scan, check if there is an RTDose file in the path folder")
 
+if os.listdir( path ):
+    dirs = os.listdir( path )
+    for file in dirs:
+       ds = pydicom.dcmread(path+"/"+file)
+       if ds.file_meta.MediaStorageSOPClassUID == '1.2.840.10008.5.1.4.1.1.481.2':
+          print("The RTDose file is named:",file)
+          print(".")
+          print(".")
+          print(".")  
+          dose = ds.pixel_array.astype('float')
+          dose *= ds.DoseGridScaling
+          print("The maximum value of the dose is: ",np.max(dose),'Gy')
+          print("The mean value of the dose is: ",np.mean(dose),'Gy')
+          print("The median value of the dose is: ",np.median(dose),'Gy')
+          print("The minimum value of the dose is: ",np.min(dose),'Gy')
+          print(".")
+          print(".")
+          print(".")  
+          print("To go to the previous slice press 'p'")
+          print("To go to the next slice press 'n'")
+          print("To change the axis of view press 'c'")
+          
+          multi_slice_viewer(dose)
+          print(".")
+          print(".")
+          print(".")  
+          break
+    print("Process finished. If the program has not plotted the scan, check if there is an RTDose file in the path folder")
+else:
+     if not os.path.isfile(path):
+        print('Input file not found')
+        sys.exit()
+
+     if path.endswith('.gz'):
+        with gzip.open(path, 'rb') as f_in:
+           ds = pydicom.dcmread(f_in)
+     else:
+       ds = pydicom.dcmread(path)
+     if not hasattr(ds.file_meta,'TransferSyntaxUID'):
+        ds.file_meta.TransferSyntaxUID = uid.ImplicitVRLittleEndian
+        
+     print("The RTDose file is named:",path)
+     print(".")
+     print(".")
+     print(".")  
+     dose = ds.pixel_array.astype('float')
+     dose *= ds.DoseGridScaling
+     print("The maximum value of the dose is: ",np.max(dose),'Gy')
+     print("The mean value of the dose is: ",np.mean(dose),'Gy')
+     print("The median value of the dose is: ",np.median(dose),'Gy')
+     print("The minimum value of the dose is: ",np.min(dose),'Gy')
+     print(".")
+     print(".")
+     print(".")  
+     print("To go to the previous slice press 'p'")
+     print("To go to the next slice press 'n'")
+     print("To change the axis of view press 'c'")
+          
+     multi_slice_viewer(dose)
+     print(".")
+     print(".")
+     print(".")  
+         
+     print("Process finished. If the program has not plotted the scan, check if there is an RTDose file in the path folder")
+    
+    
