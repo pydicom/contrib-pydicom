@@ -217,9 +217,6 @@ def _splitSerieIfRequired(serie, series):
         series.remove(serie)
 
 
-pixelDataTag = pydicom.tag.Tag(0x7fe0, 0x0010)
-
-
 def _getPixelDataFromDataset(ds):
     """ Get the pixel data from the given dataset. If the data
     was deferred, make it deferred again, so that memory is
@@ -227,13 +224,13 @@ def _getPixelDataFromDataset(ds):
     if available. """
 
     # Get original element
-    el = dict.__getitem__(ds, pixelDataTag)
+    el = ds['PixelData']
 
     # Get data
     data = ds.pixel_array
 
     # Remove data (mark as deferred)
-    dict.__setitem__(ds, pixelDataTag, el)
+    ds['PixelData'] = el
     del ds._pixel_array
 
     # Obtain slope and offset
@@ -333,7 +330,7 @@ def read_files(path, showProgress=False, readPixelData=False, force=False):
     files = []
 
     # Obtain data from the given path
-    if isinstance(path, compat.string_types):
+    if isinstance(path, str):
         # Make dir nice
         basedir = os.path.abspath(path)
         # Check whether it exists
@@ -617,6 +614,13 @@ class DicomSeries(object):
 
         # Init measures to check (these are in 2D)
         dimensions = ds1.Rows, ds1.Columns
+        if (samples := ds1.SamplesPerPixel) > 1:
+            if (conf := ds1.PlanarConfiguration) == 0:
+                dimensions += (samples,)
+            elif conf == 1:
+                dimensions = (samples,) + dimensions
+            else:
+                raise ValueError(f"Invalid Planar Configuration: '{conf}'")
 
         # row, column
         sampling = float(ds1.PixelSpacing[0]), float(ds1.PixelSpacing[1])
@@ -684,3 +688,4 @@ if __name__ == '__main__':
         print("Summary of each series:")
         for series in all_series:
             print(series.description)
+            arr = series.get_pixel_array()
