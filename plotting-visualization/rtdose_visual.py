@@ -6,7 +6,6 @@ Created on Wed Mar 31 10:45:06 2021
 @author: Fernando Hueso González
 """
 import pydicom
-from pydicom import  uid
 import matplotlib.pyplot as plt
 import os
 import numpy as np
@@ -40,6 +39,7 @@ def remove_keymap_conflicts(new_keys_set):
 def multi_slice_viewer(volume):
     """
     This function uses the  methods found in https://github.com/jni/mpl-volume-viewer
+    available under a BSD license.
     Parameters
     ----------
     volume : numpy.ndarray
@@ -98,8 +98,8 @@ def draw(ax,changing):
     ax : matplotlib.axes._subplots.AxesSubplot
         Subplot made by matplotlib.
 
-    changing : Boole
-        A boole variable that remains False unless we change the axis we are plotting.
+    changing : Boolean
+        A boolean variable that remains False unless we change the axis we are plotting.
 
     Returns
     -------
@@ -191,7 +191,8 @@ cMax = None
 
 # This would print all the files and directories
 
-try :
+if os.path.isdir(path):
+    
     dirs = os.listdir( path )
     for file in dirs:
        ds = pydicom.dcmread(path+"/"+file)
@@ -202,7 +203,7 @@ try :
           print(".")  
           break
    
-except:
+else:
      cwd = os.getcwd()
 
      if not os.path.isfile(cwd+"/"+path):
@@ -214,13 +215,18 @@ except:
            ds = pydicom.dcmread(f_in)
      else:
        ds = pydicom.dcmread(cwd+"/"+path)
-     if not hasattr(ds.file_meta,'TransferSyntaxUID'):
-        ds.file_meta.TransferSyntaxUID = uid.ImplicitVRLittleEndian
-        
-     print("The RTDose file is named:",path)
-     print(".")
-     print(".")
-     print(".")  
+    
+     if ds.file_meta.MediaStorageSOPClassUID == '1.2.840.10008.5.1.4.1.1.481.2':   
+         print("The RTDose file is named:",path)
+         print(".")
+         print(".")
+         print(".")  
+     else:
+         print("The file is not in RTDose format ")
+         sys.exit()
+if not hasattr(ds.file_meta,'TransferSyntaxUID'):
+     ds.file_meta.TransferSyntaxUID = pydicom.uid.ImplicitVRLittleEndian 
+     
 dose = ds.pixel_array.astype('float')
 dose *= ds.DoseGridScaling
 print("The maximum value of the dose is: ",np.max(dose),'Gy')
