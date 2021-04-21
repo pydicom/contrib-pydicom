@@ -14,14 +14,7 @@ Show a dicom file using a hierarchical tree in a graphical window.
 from __future__ import print_function
 
 from pydicom import compat
-
-try:
-    if compat.in_py2:
-        import Tix as tkinter_tix
-    else:
-        import tkinter.tix as tkinter_tix
-except:
-    import tkinter.tix as tkinter_tix
+import tkinter.tix as tkinter_tix
 
 print(__doc__)
 
