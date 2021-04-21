@@ -39,7 +39,7 @@ def remove_keymap_conflicts(new_keys_set):
    
 def multi_slice_viewer(volume):
     """
-    Based on : https://www.datacamp.com/community/tutorials/matplotlib-3d-volumetric-data
+    This function uses the  methods found in https://github.com/jni/mpl-volume-viewer
     Parameters
     ----------
     volume : numpy.ndarray
@@ -183,7 +183,6 @@ def change_axis(ax):
 
 # Define the path folder where the file is , or directly the RTdose full file name
 path = "RD.1.2.246.352.71.7.2088656855.452097.20110920152341.dcm"
-#path = 'C:/Users/kpiqu/OneDrive - Universitat de Valencia/Máster Física Médica/TFM/Comienzos PyDICOM/Prueba Archivo RTDOSE/eclipse-8.1.20-phantom-breast/Original'
 global cMin, cMax,cMap
 cMap = 'turbo'
 cMin = None
@@ -192,7 +191,7 @@ cMax = None
 
 # This would print all the files and directories
 
-if os.listdir( path ):
+try :
     dirs = os.listdir( path )
     for file in dirs:
        ds = pydicom.dcmread(path+"/"+file)
@@ -201,27 +200,12 @@ if os.listdir( path ):
           print(".")
           print(".")
           print(".")  
-          dose = ds.pixel_array.astype('float')
-          dose *= ds.DoseGridScaling
-          print("The maximum value of the dose is: ",np.max(dose),'Gy')
-          print("The mean value of the dose is: ",np.mean(dose),'Gy')
-          print("The median value of the dose is: ",np.median(dose),'Gy')
-          print("The minimum value of the dose is: ",np.min(dose),'Gy')
-          print(".")
-          print(".")
-          print(".")  
-          print("To go to the previous slice press 'p'")
-          print("To go to the next slice press 'n'")
-          print("To change the axis of view press 'c'")
-          
-          multi_slice_viewer(dose)
-          print(".")
-          print(".")
-          print(".")  
           break
-    print("Process finished. If the program has not plotted the scan, check if there is an RTDose file in the path folder")
-else:
-     if not os.path.isfile(path):
+   
+except:
+     cwd = os.getcwd()
+
+     if not os.path.isfile(cwd+"/"+path):
         print('Input file not found')
         sys.exit()
 
@@ -229,7 +213,7 @@ else:
         with gzip.open(path, 'rb') as f_in:
            ds = pydicom.dcmread(f_in)
      else:
-       ds = pydicom.dcmread(path)
+       ds = pydicom.dcmread(cwd+"/"+path)
      if not hasattr(ds.file_meta,'TransferSyntaxUID'):
         ds.file_meta.TransferSyntaxUID = uid.ImplicitVRLittleEndian
         
@@ -237,24 +221,24 @@ else:
      print(".")
      print(".")
      print(".")  
-     dose = ds.pixel_array.astype('float')
-     dose *= ds.DoseGridScaling
-     print("The maximum value of the dose is: ",np.max(dose),'Gy')
-     print("The mean value of the dose is: ",np.mean(dose),'Gy')
-     print("The median value of the dose is: ",np.median(dose),'Gy')
-     print("The minimum value of the dose is: ",np.min(dose),'Gy')
-     print(".")
-     print(".")
-     print(".")  
-     print("To go to the previous slice press 'p'")
-     print("To go to the next slice press 'n'")
-     print("To change the axis of view press 'c'")
+dose = ds.pixel_array.astype('float')
+dose *= ds.DoseGridScaling
+print("The maximum value of the dose is: ",np.max(dose),'Gy')
+print("The mean value of the dose is: ",np.mean(dose),'Gy')
+print("The median value of the dose is: ",np.median(dose),'Gy')
+print("The minimum value of the dose is: ",np.min(dose),'Gy')
+print(".")
+print(".")
+print(".")  
+print("To go to the previous slice press 'p'")
+print("To go to the next slice press 'n'")
+print("To change the axis of view press 'c'")
           
-     multi_slice_viewer(dose)
-     print(".")
-     print(".")
-     print(".")  
+multi_slice_viewer(dose)
+print(".")
+print(".")
+print(".")  
          
-     print("Process finished. If the program has not plotted the scan, check if there is an RTDose file in the path folder")
+print("Process finished. If the program has not plotted the scan, check if there is an RTDose file in the path folder")
     
     
