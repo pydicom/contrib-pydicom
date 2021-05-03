@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Dicom Image IOD
-'''
+"""
 from pydicom.config import logger
 
 

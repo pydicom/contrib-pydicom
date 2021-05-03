@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Dicom Study IOD
-'''
+"""
 from pydicom.config import logger
 from series import Series
 
