@@ -14,12 +14,14 @@ This example just prints out the patient/study/series/instance hierarchy
 #    See the file LICENSE included with this distribution, also
 #    available at https://github.com/pydicom/pydicom
 
-import os
 import argparse
-import sys
 import fnmatch
+import os
+import sys
 from pprint import pformat
+
 import pydicom
+from pydicom.misc import is_dicom
 
 from patient import Patient
 
@@ -42,9 +44,7 @@ def find_dicom_files(directory, pattern="*", directory_exclude_pattern='', recur
         for basename in files:
             if fnmatch.fnmatch(basename, pattern):
                 filename = os.path.join(root, basename)
-                with open(filename, 'rb') as f:
-                    x = f.read(132)
-                if x[128:] == b"DICM":
+                if is_dicom(filename):
                     yield filename
 
 

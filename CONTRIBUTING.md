@@ -2,7 +2,7 @@
 # Contributing to contrib-pydicom
 
 This is the summary for contributing code to the pydicom contribution
-repository, contrib-python. This repository is intended for scripts and examples to
+repository, contrib-pydicom. This repository is intended for scripts and examples to
 supplement pydicom. If your contribution is intended to modify or enhance the core
 of pydicom, you should consider contribution to the [pydicom](https://www.github.com/pydicom/pydicom)
 main repository. Please read it carefully to help making the code review process go as
@@ -108,13 +108,10 @@ We recommend that your contribution complies with the following rules before you
 submit a pull request:
 
 -  Follow the
-   [coding-guidelines](http://pydicom.org/dev/developers/contributing.html#coding-guidelines).
+   [coding-guidelines](https://pydicom.github.io/pydicom/stable/tutorials/contributing_code.html).
 
 -  Use, when applicable, the validation tools and scripts in the
-   `pydicom.utils` submodule.  A list of utility routines available
-   for developers can be found in the
-   [Utilities for Developers](http://pydicom.org/dev/developers/utilities.html#developers-utils)
-   page.
+   `pydicom.util` submodule.
 
 -  If your pull request addresses an issue with another contribution, 
    please use the pull request title to describe the issue and mention 

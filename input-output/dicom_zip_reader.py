@@ -16,14 +16,15 @@ dicom_zip_reader.py --input-file test.tgz
 #    See the file LICENSE included with this distribution, also
 #    available at https://github.com/pydicom/pydicom
 
-from io import StringIO
+import argparse
 import logging
-import tarfile
-from tarfile import TarFile
-import zipfile
 import os
 import sys
-import argparse
+import tarfile
+import zipfile
+from io import StringIO
+from tarfile import TarFile
+
 import pydicom
 
 
