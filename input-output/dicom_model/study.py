@@ -14,7 +14,7 @@ class Study(object):
 
     def __repr__(self):
         try:
-            output = "\tStudyIUID = %s:\n" % (self.dicom_dataset.StudyInstanceUID, )
+            output = f"\tStudyIUID = {self.dicom_dataset.StudyInstanceUID}:\n"
             for x in self.series:
                 output += repr(x)
             return output

@@ -266,10 +266,10 @@ def _strip_elements(jsn, elements):
 def _set_meta_info_dcm(dcm):
     """ Set the file metadata DataSet attributes
 
-    This is done by PyDicom when we pydicom.read_file(foo)
+    This is done by PyDicom when we pydicom.dcmread(foo)
     but we need to do it ourselves when creating
     a DataSet from scratch, otherwise we cannot use
-    foo.pixel_array or pydicom.write_file(foo).
+    foo.pixel_array or pydicom.dcmwrite(foo).
 
     This code is lifted from PyDicom.
 
@@ -456,5 +456,5 @@ if __name__ == '__main__':
     testfiles = [os.path.join('../testfiles', x) for x in testfiles]
 
     for dcmfile in testfiles:
-        dcm = pydicom.read_file(dcmfile)
+        dcm = pydicom.dcmread(dcmfile)
         db[dcm.SeriesInstanceUID] = dcm

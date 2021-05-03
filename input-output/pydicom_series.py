@@ -1,4 +1,4 @@
-# dicom_series.py
+# pydicom_series.py
 """
 By calling the function read_files with a directory name or list
 of files as an argument, a list of DicomSeries instances can be
@@ -13,7 +13,6 @@ This module can deal with gated data, in which case a DicomSeries
 instance is created for each 3D volume.
 
 """
-from __future__ import print_function
 #
 # Copyright (c) 2010 Almar Klein
 # This file is released under the pydicom license.
@@ -43,7 +42,6 @@ import gc
 
 import pydicom
 from pydicom.sequence import Sequence
-from pydicom import compat
 
 # Try importing numpy
 try:
@@ -121,12 +119,12 @@ _progressBar = ProgressBar()
 
 def _progressCallback(progress):
     """ The default callback for displaying progress. """
-    if isinstance(progress, compat.string_types):
+    if isinstance(progress, str):
         _progressBar.Start(progress)
         _progressBar._t0 = time.time()
     elif progress is None:
         dt = time.time() - _progressBar._t0
-        _progressBar.Finish('%2.2f seconds' % dt)
+        _progressBar.Finish(f'{dt:2.2f} seconds')
     else:
         _progressBar.Update(progress)
 
@@ -189,7 +187,7 @@ def _splitSerieIfRequired(serie, series):
         else:
             # Test missing file
             if distance and newDist > 1.5 * distance:
-                print('Warning: missing file after "%s"' % ds1.filename)
+                print(f'Warning: missing file after "{ds1.filename}"')
             distance = newDist
 
         # Add to last list
@@ -270,21 +268,21 @@ def _getPixelDataFromDataset(ds):
             if minReq < 0:
                 # Signed integer type
                 maxReq = max([-minReq, maxReq])
-                if maxReq < 2**7:
+                if maxReq < 2 ** 7:
                     dtype = np.int8
-                elif maxReq < 2**15:
+                elif maxReq < 2 ** 15:
                     dtype = np.int16
-                elif maxReq < 2**31:
+                elif maxReq < 2 ** 31:
                     dtype = np.int32
                 else:
                     dtype = np.float32
             else:
                 # Unsigned integer type
-                if maxReq < 2**8:
+                if maxReq < 2 ** 8:
                     dtype = np.uint8
-                elif maxReq < 2**16:
+                elif maxReq < 2 ** 16:
                     dtype = np.uint16
-                elif maxReq < 2**32:
+                elif maxReq < 2 ** 32:
                     dtype = np.uint32
                 else:
                     dtype = np.float32
@@ -347,7 +345,7 @@ def read_files(path, showProgress=False, readPixelData=False, force=False):
             elif os.path.isfile(p):
                 files.append(p)
             else:
-                print("Warning, the path '%s' is not valid." % p)
+                print(f"Warning, the path '{p}' is not valid.")
     else:
         raise ValueError('The path argument must be a string or list.')
 
@@ -374,7 +372,7 @@ def read_files(path, showProgress=False, readPixelData=False, force=False):
 
         # Try loading dicom ...
         try:
-            dcm = pydicom.read_file(filename, deferSize, force=force)
+            dcm = pydicom.dcmread(filename, deferSize, force=force)
         except pydicom.filereader.InvalidDicomError:
             continue  # skip non-dicom file
         except Exception as why:
@@ -659,7 +657,7 @@ class DicomSeries(object):
         info = pydicom.dataset.Dataset()
         firstDs = self._datasets[0]
         for key in firstDs.keys():
-            if key != (0x7fe0, 0x0010):
+            if key != 'PixelData':
                 el = firstDs[key]
                 info.add_new(el.tag, el.VR, el.value)
 

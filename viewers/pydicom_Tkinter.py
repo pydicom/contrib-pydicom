@@ -23,7 +23,7 @@ Usage:
 >>> import pydicom              # pydicom
 >>> import pydicom.contrib.pydicom_Tkinter as pydicom_Tkinter    # this module
 
->>> df = pydicom.read_file(filename)
+>>> df = pydicom.dcmread(filename)
 >>> pydicom_Tkinter.show_image(df)
 '''
 
@@ -126,7 +126,7 @@ def get_tkinter_photoimage_from_pydicom_image(data):
     This will fail if the "numpy" module is not
     installed in the attempt of creating the data.pixel_array.
 
-    data:  object returned from pydicom.read_file()
+    data:  object returned from pydicom.dcmread()
     side effect: may leave a temporary .pgm file on disk
     '''
 
@@ -194,7 +194,7 @@ def show_image(data, block=True, master=None):
     '''
     Get minimal Tkinter GUI and display a pydicom data.pixel_array
 
-    data: object returned from pydicom.read_file()
+    data: object returned from pydicom.dcmread()
     block: if True run Tk mainloop() to show the image
     master: use with block==False and an existing
     Tk widget as parent widget

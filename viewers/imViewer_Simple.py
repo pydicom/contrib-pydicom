@@ -306,7 +306,7 @@ class ImFrame(wx.Frame):
         careful not to pass a unicode string to read_file or it will
         give you 'fp object does not have a defer_size attribute,
         or some such."""
-        ds = pydicom.read_file(str(fullPath))
+        ds = pydicom.dcmread(str(fullPath))
 
         # change strings to unicode
         ds.decode()

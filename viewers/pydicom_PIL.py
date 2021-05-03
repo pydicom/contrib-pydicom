@@ -5,7 +5,7 @@
 Usage:
 >>> import pydicom
 >>> from pydicom.contrib.pydicom_PIL import show_PIL
->>> ds = pydicom.read_file("filename")
+>>> ds = pydicom.dcmread("filename")
 >>> show_PIL(ds)
 
 Requires Numpy:

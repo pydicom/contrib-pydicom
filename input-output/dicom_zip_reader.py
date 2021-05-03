@@ -16,8 +16,7 @@ dicom_zip_reader.py --input-file test.tgz
 #    See the file LICENSE included with this distribution, also
 #    available at https://github.com/pydicom/pydicom
 
-from __future__ import print_function
-import StringIO
+from io import StringIO
 import logging
 import tarfile
 from tarfile import TarFile
@@ -34,8 +33,8 @@ def show_patient_IDs(file_list=None):
         file_list = []
     for file_name, file_object in file_list:
         try:
-            logger.info('reading: %s', file_name)
-            f = pydicom.read_file(fp=file_object)
+            logger.info(f'reading: {file_name}')
+            f = pydicom.dcmread(fp=file_object)
             logger.info("finished reading")
             patient_id = f.get("PatientID", "No ID")
             print(file_name, "has patient id of", patient_id)
@@ -56,11 +55,11 @@ def unzip(zip_archive):
     logger.debug("Unzipping...")
     file_list = []
     for file_name in zip_archive.namelist():
-        logger.debug("Unzipping %s", file_name)
+        logger.debug(f"Unzipping {file_name}")
         if (not os.path.basename(file_name).startswith('.') and
                 not file_name.endswith('/')):
             file_object = zip_archive.open(file_name, 'rU')
-            file_like_object = StringIO.StringIO(file_object.read())
+            file_like_object = StringIO(file_object.read())
             file_object.close()
             file_like_object.seek(0)
             name = os.path.basename(file_name)
@@ -83,11 +82,11 @@ def untar(tar_archive):
     logger.debug("Untarring...")
     file_list = []
     for file_info in tar_archive.getmembers():
-        logging.debug("Found: %s", file_info.name)
+        logging.debug(f"Found: {file_info.name}")
         if (file_info.isfile() and
                 not os.path.basename(file_info.name).startswith('.')):
             file_object = tar_archive.extractfile(file_info)
-            file_like_object = StringIO.StringIO(file_object.read())
+            file_like_object = StringIO(file_object.read())
             file_object.close()
             file_like_object.seek(0)
             name = os.path.basename(file_info.name)
@@ -127,6 +126,7 @@ def main():
     except Exception as e:
         logging.warning("Unknown Error, exiting", exc_info=e)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

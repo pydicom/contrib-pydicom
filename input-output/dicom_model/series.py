@@ -14,7 +14,7 @@ class Series(object):
 
     def __repr__(self):
         try:
-            output = "\t\tSeriesIUID = %s:\n" % (self.dicom_dataset.SeriesInstanceUID, )
+            output = f"\t\tSeriesIUID = {self.dicom_dataset.SeriesInstanceUID}:\n"
             for x in self.images:
                 output += repr(x)
             return output

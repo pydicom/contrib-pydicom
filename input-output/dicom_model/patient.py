@@ -14,7 +14,7 @@ class Patient(object):
 
     def __repr__(self):
         try:
-            output = "PatientID = %s:\n" % (self.dicom_dataset.PatientID, )
+            output = f"PatientID = {self.dicom_dataset.PatientID}:\n"
             for x in self.studies:
                 output += repr(x)
             return output
