@@ -301,6 +301,20 @@ def _getPixelDataFromDataset(ds):
 
 # The public functions and classes
 
+def find_shape(dataset):
+    """Find the expected shape of `dataset.pixel_array` without reading the pixel data"""
+    shape = dataset.Rows, dataset.Columns
+    samples = dataset.SamplesPerPixel
+    if samples > 1:
+        conf = dataset.PlanarConfiguration
+        if conf == 0:
+            shape += (samples,)
+        elif conf == 1:
+            shape = (samples,) + shape
+        else:
+            raise ValueError(f"Invalid Planar Configuration: '{conf}'")
+    return shape
+
 
 def read_files(path, showProgress=False, readPixelData=False, force=False):
     """ read_files(path, showProgress=False, readPixelData=False)
@@ -598,10 +612,8 @@ class DicomSeries(object):
             # Set attributes
             ds = self._datasets[0]
             self._info = self._datasets[0]
-            self._shape = [ds.Rows, ds.Columns]
-            self._sampling = [
-                float(ds.PixelSpacing[0]), float(ds.PixelSpacing[1])
-            ]
+            self._shape = find_shape(ds)
+            self._sampling = float(ds.PixelSpacing[0]), float(ds.PixelSpacing[1])
             return
 
         # Get previous
@@ -611,14 +623,7 @@ class DicomSeries(object):
         distance_sum = 0.0
 
         # Init measures to check (these are in 2D)
-        dimensions = ds1.Rows, ds1.Columns
-        if (samples := ds1.SamplesPerPixel) > 1:
-            if (conf := ds1.PlanarConfiguration) == 0:
-                dimensions += (samples,)
-            elif conf == 1:
-                dimensions = (samples,) + dimensions
-            else:
-                raise ValueError(f"Invalid Planar Configuration: '{conf}'")
+        dimensions = find_shape(ds1)
 
         # row, column
         sampling = float(ds1.PixelSpacing[0]), float(ds1.PixelSpacing[1])
@@ -635,10 +640,11 @@ class DicomSeries(object):
             pos2 = float(ds2.ImagePositionPatient[2])
 
             # Update distance_sum to calculate distance later
+            # TODO: use ImageOrientationPatient's normal to calculate this distance
             distance_sum += abs(pos1 - pos2)
 
             # Test measures
-            dimensions2 = ds2.Rows, ds2.Columns
+            dimensions2 = find_shape(ds2)
             sampling2 = float(ds2.PixelSpacing[0]), float(ds2.PixelSpacing[1])
             if dimensions != dimensions2:
                 # We cannot produce a volume if the dimensions match
@@ -665,10 +671,9 @@ class DicomSeries(object):
         # (Note that there are len(L)-1 distances)
         distance_mean = distance_sum / (len(L) - 1)
 
-        # Store information that is specific for the serie
-        self._shape = [len(L), ds2.Rows, ds2.Columns]
-        self._sampling = [distance_mean, float(ds2.PixelSpacing[0]),
-                          float(ds2.PixelSpacing[1])]
+        # Store information that is specific for the series
+        self._shape = (len(L),) + dimensions
+        self._sampling = (distance_mean,) + sampling
 
         # Store
         self._info = info
@@ -682,7 +687,7 @@ if __name__ == '__main__':
     else:
         adir = sys.argv[1]
         t0 = time.time()
-        all_series = read_files(adir, None, False)
+        all_series = read_files(adir, False, False)
         print("Summary of each series:")
         for series in all_series:
             print(series.description)
