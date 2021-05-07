@@ -1,19 +1,18 @@
-# dicom_series.py
+# pydicom_series.py
 """
 By calling the function read_files with a directory name or list
 of files as an argument, a list of DicomSeries instances can be
 obtained. A DicomSeries object has some attributes that give
-information about the serie (such as shape, sampling, suid) and
+information about the series (such as shape, spacing, suid) and
 has an info attribute, which is a pydicom.DataSet instance containing
-information about the first dicom file in the serie. The data can
+information about the first dicom file in the series. The data can
 be obtained using the get_pixel_array() method, which produces a
-3D numpy array if there a multiple files in the serie.
+3D numpy array if there a multiple files in the series.
 
 This module can deal with gated data, in which case a DicomSeries
 instance is created for each 3D volume.
 
 """
-from __future__ import print_function
 #
 # Copyright (c) 2010 Almar Klein
 # This file is released under the pydicom license.
@@ -37,13 +36,12 @@ from __future__ import print_function
 # - Deferred loading of data, cold: 9 sec
 # - Deferred loading of data, warm: 3 sec
 
+import gc
 import os
 import time
-import gc
 
 import pydicom
 from pydicom.sequence import Sequence
-from pydicom import compat
 
 # Try importing numpy
 try:
@@ -121,12 +119,12 @@ _progressBar = ProgressBar()
 
 def _progressCallback(progress):
     """ The default callback for displaying progress. """
-    if isinstance(progress, compat.string_types):
+    if isinstance(progress, str):
         _progressBar.Start(progress)
         _progressBar._t0 = time.time()
     elif progress is None:
         dt = time.time() - _progressBar._t0
-        _progressBar.Finish('%2.2f seconds' % dt)
+        _progressBar.Finish(f'{dt:2.2f} seconds')
     else:
         _progressBar.Update(progress)
 
@@ -189,7 +187,7 @@ def _splitSerieIfRequired(serie, series):
         else:
             # Test missing file
             if distance and newDist > 1.5 * distance:
-                print('Warning: missing file after "%s"' % ds1.filename)
+                print(f'Warning: missing file after "{ds1.filename}"')
             distance = newDist
 
         # Add to last list
@@ -217,9 +215,6 @@ def _splitSerieIfRequired(serie, series):
         series.remove(serie)
 
 
-pixelDataTag = pydicom.tag.Tag(0x7fe0, 0x0010)
-
-
 def _getPixelDataFromDataset(ds):
     """ Get the pixel data from the given dataset. If the data
     was deferred, make it deferred again, so that memory is
@@ -227,13 +222,13 @@ def _getPixelDataFromDataset(ds):
     if available. """
 
     # Get original element
-    el = dict.__getitem__(ds, pixelDataTag)
+    el = ds['PixelData']
 
     # Get data
     data = ds.pixel_array
 
     # Remove data (mark as deferred)
-    dict.__setitem__(ds, pixelDataTag, el)
+    ds['PixelData'] = el
     del ds._pixel_array
 
     # Obtain slope and offset
@@ -273,21 +268,21 @@ def _getPixelDataFromDataset(ds):
             if minReq < 0:
                 # Signed integer type
                 maxReq = max([-minReq, maxReq])
-                if maxReq < 2**7:
+                if maxReq < 2 ** 7:
                     dtype = np.int8
-                elif maxReq < 2**15:
+                elif maxReq < 2 ** 15:
                     dtype = np.int16
-                elif maxReq < 2**31:
+                elif maxReq < 2 ** 31:
                     dtype = np.int32
                 else:
                     dtype = np.float32
             else:
                 # Unsigned integer type
-                if maxReq < 2**8:
+                if maxReq < 2 ** 8:
                     dtype = np.uint8
-                elif maxReq < 2**16:
+                elif maxReq < 2 ** 16:
                     dtype = np.uint16
-                elif maxReq < 2**32:
+                elif maxReq < 2 ** 32:
                     dtype = np.uint32
                 else:
                     dtype = np.float32
@@ -305,6 +300,24 @@ def _getPixelDataFromDataset(ds):
 
 
 # The public functions and classes
+
+def find_shape(dataset):
+    """Find the expected shape of `dataset.pixel_array` without reading the pixel data.
+    The returned shape is a tuple"""
+    shape = dataset.Rows, dataset.Columns
+    frames = dataset.get('NumberOfFrames', 1) or 1
+    if frames > 1:
+        shape = (frames,) + shape
+    samples = dataset.SamplesPerPixel
+    if samples > 1:
+        conf = dataset.PlanarConfiguration
+        if conf == 0:
+            shape += (samples,)
+        elif conf == 1:
+            shape = (samples,) + shape
+        else:
+            raise ValueError(f"Invalid Planar Configuration: '{conf}'")
+    return shape
 
 
 def read_files(path, showProgress=False, readPixelData=False, force=False):
@@ -333,7 +346,7 @@ def read_files(path, showProgress=False, readPixelData=False, force=False):
     files = []
 
     # Obtain data from the given path
-    if isinstance(path, compat.string_types):
+    if isinstance(path, str):
         # Make dir nice
         basedir = os.path.abspath(path)
         # Check whether it exists
@@ -350,7 +363,7 @@ def read_files(path, showProgress=False, readPixelData=False, force=False):
             elif os.path.isfile(p):
                 files.append(p)
             else:
-                print("Warning, the path '%s' is not valid." % p)
+                print(f"Warning, the path '{p}' is not valid.")
     else:
         raise ValueError('The path argument must be a string or list.')
 
@@ -377,7 +390,7 @@ def read_files(path, showProgress=False, readPixelData=False, force=False):
 
         # Try loading dicom ...
         try:
-            dcm = pydicom.read_file(filename, deferSize, force=force)
+            dcm = pydicom.dcmread(filename, deferSize, force=force)
         except pydicom.filereader.InvalidDicomError:
             continue  # skip non-dicom file
         except Exception as why:
@@ -428,7 +441,7 @@ def read_files(path, showProgress=False, readPixelData=False, force=False):
 
 class DicomSeries(object):
     """ DicomSeries
-    This class represents a serie of dicom files that belong together.
+    This class represents a series of dicom files that belong together.
     If these are multiple files, they represent the slices of a volume
     (like for CT or MRI). The actual volume can be obtained using loadData().
     Information about the data can be obtained using the info attribute.
@@ -437,7 +450,7 @@ class DicomSeries(object):
     # To create a DicomSeries object, start by making an instance and
     # append files using the "_append" method. When all files are
     # added, call "_sort" to sort the files, and then "_finish" to evaluate
-    # the data, perform some checks, and set the shape and sampling
+    # the data, perform some checks, and set the shape and spacing
     # attributes of the instance.
 
     def __init__(self, suid, showProgress):
@@ -449,7 +462,7 @@ class DicomSeries(object):
         self._suid = suid
         self._info = None
         self._shape = None
-        self._sampling = None
+        self._spacing = None
 
     @property
     def suid(self):
@@ -459,19 +472,19 @@ class DicomSeries(object):
     @property
     def shape(self):
         """ The shape of the data (nz, ny, nx).
-        If None, the serie contains a single dicom file. """
+        If None, the series contains a single dicom file. """
         return self._shape
 
     @property
-    def sampling(self):
-        """ The sampling (voxel distances) of the data (dz, dy, dx).
-        If None, the serie contains a single dicom file. """
-        return self._sampling
+    def spacing(self):
+        """ The spacing (voxel distances) of the data (dz, dy, dx).
+        If None, the series contains a single dicom file. """
+        return self._spacing
 
     @property
     def info(self):
         """ A DataSet instance containing the information as present in the
-        first dicomfile of this serie. """
+        first dicomfile of this series. """
         return self._info
 
     @property
@@ -548,7 +561,6 @@ class DicomSeries(object):
         # Init data (using what the dicom packaged produces as a reference)
         ds = self._datasets[0]
         slice = _getPixelDataFromDataset(ds)
-        # vol = Aarray(self.shape, self.sampling, fill=0, dtype=slice.dtype)
         vol = np.zeros(self.shape, dtype=slice.dtype)
         vol[0] = slice
 
@@ -586,7 +598,7 @@ class DicomSeries(object):
         a volumetric dataset. This means the files should meet certain
         conditions. Also some additional information has to be calculated,
         such as the distance between the slices. This method sets the
-        attributes for "shape", "sampling" and "info".
+        attributes for "shape", "spacing" and "info".
 
         This method checks:
           * that there are no missing files
@@ -603,10 +615,8 @@ class DicomSeries(object):
             # Set attributes
             ds = self._datasets[0]
             self._info = self._datasets[0]
-            self._shape = [ds.Rows, ds.Columns]
-            self._sampling = [
-                float(ds.PixelSpacing[0]), float(ds.PixelSpacing[1])
-            ]
+            self._shape = find_shape(ds)
+            self._spacing = ds.PixelSpacing
             return
 
         # Get previous
@@ -616,10 +626,10 @@ class DicomSeries(object):
         distance_sum = 0.0
 
         # Init measures to check (these are in 2D)
-        dimensions = ds1.Rows, ds1.Columns
+        dimensions = find_shape(ds1)
 
         # row, column
-        sampling = float(ds1.PixelSpacing[0]), float(ds1.PixelSpacing[1])
+        spacing = ds1.PixelSpacing
 
         for index in range(len(L)):
             # The first round ds1 and ds2 will be the same, for the
@@ -633,17 +643,18 @@ class DicomSeries(object):
             pos2 = float(ds2.ImagePositionPatient[2])
 
             # Update distance_sum to calculate distance later
+            # TODO: use ImageOrientationPatient's normal to calculate this distance
             distance_sum += abs(pos1 - pos2)
 
             # Test measures
-            dimensions2 = ds2.Rows, ds2.Columns
-            sampling2 = float(ds2.PixelSpacing[0]), float(ds2.PixelSpacing[1])
+            dimensions2 = find_shape(ds2)
+            spacing2 = ds2.PixelSpacing
             if dimensions != dimensions2:
                 # We cannot produce a volume if the dimensions match
                 raise ValueError('Dimensions of slices does not match.')
-            if sampling != sampling2:
+            if spacing != spacing2:
                 # We can still produce a volume, but we should notify the user
-                msg = 'Warning: sampling does not match.'
+                msg = 'Warning: spacing does not match.'
                 if self._showProgress is _progressCallback:
                     _progressBar.PrintMessage(msg)
                 else:
@@ -655,7 +666,7 @@ class DicomSeries(object):
         info = pydicom.dataset.Dataset()
         firstDs = self._datasets[0]
         for key in firstDs.keys():
-            if key != (0x7fe0, 0x0010):
+            if key != 'PixelData':
                 el = firstDs[key]
                 info.add_new(el.tag, el.VR, el.value)
 
@@ -663,10 +674,10 @@ class DicomSeries(object):
         # (Note that there are len(L)-1 distances)
         distance_mean = distance_sum / (len(L) - 1)
 
-        # Store information that is specific for the serie
-        self._shape = [len(L), ds2.Rows, ds2.Columns]
-        self._sampling = [distance_mean, float(ds2.PixelSpacing[0]),
-                          float(ds2.PixelSpacing[1])]
+        # Store information that is specific for the series
+        self._shape = (len(L),) + dimensions
+        spacing.insert(0, distance_mean)
+        self._spacing = spacing
 
         # Store
         self._info = info
@@ -680,7 +691,8 @@ if __name__ == '__main__':
     else:
         adir = sys.argv[1]
         t0 = time.time()
-        all_series = read_files(adir, None, False)
+        all_series = read_files(adir, False, False)
         print("Summary of each series:")
         for series in all_series:
             print(series.description)
+            arr = series.get_pixel_array()

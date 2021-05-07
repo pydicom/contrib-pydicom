@@ -11,14 +11,7 @@ Show a dicom file using hierarchical tree
 Show a dicom file using a hierarchical tree in a graphical window.
 """
 
-from __future__ import print_function
-
-from pydicom import compat
-
-if compat.in_py2:
-    import Tix as tkinter_tix
-else:
-    import tkinter.tix as tkinter_tix
+import tkinter.tix as tkinter_tix
 
 print(__doc__)
 
@@ -39,8 +32,9 @@ def RunTree(w, filename):
     box.add('exit', text='Exit', underline=0, command=w.destroy, width=6)
     box.pack(side=tkinter_tix.BOTTOM, fill=tkinter_tix.X)
     top.pack(side=tkinter_tix.TOP, fill=tkinter_tix.BOTH, expand=1)
-    #https://stackoverflow.com/questions/17355902/python-tkinter-binding-mousewheel-to-scrollbar
-    tree.bind_all('<MouseWheel>', lambda event: tree.hlist.yview_scroll(int(-1*event.delta/120.), "units"))  # Wheel in Windows
+    # https://stackoverflow.com/questions/17355902/python-tkinter-binding-mousewheel-to-scrollbar
+    tree.bind_all('<MouseWheel>',
+                  lambda event: tree.hlist.yview_scroll(int(-1 * event.delta / 120.), "units"))  # Wheel in Windows
     tree.bind_all('<Button-4>', lambda event: tree.hlist.yview_scroll(int(-1), "units"))  # Wheel up in Linux
     tree.bind_all('<Button-5>', lambda event: tree.hlist.yview_scroll(int(+1), "units"))  # Wheel down in Linux
 
@@ -59,13 +53,13 @@ def recurse_tree(tree, dataset, parent, hide=False):
     # order the dicom tags
     for data_element in dataset:
         node_id = parent + "." + hex(id(data_element))
-        if isinstance(data_element.value, compat.text_type):
-            tree.hlist.add(node_id, text=compat.text_type(data_element))
+        if isinstance(data_element.value, str):
+            tree.hlist.add(node_id, text=str(data_element))
         else:
             tree.hlist.add(node_id, text=str(data_element))
         if hide:
             tree.hlist.hide_entry(node_id)
-        if data_element.VR == "SQ":   # a sequence
+        if data_element.VR == "SQ":  # a sequence
             for i, dataset in enumerate(data_element.value):
                 item_id = node_id + "." + str(i + 1)
                 sq_item_description = data_element.name.replace(
@@ -79,12 +73,13 @@ def recurse_tree(tree, dataset, parent, hide=False):
 if __name__ == '__main__':
     import sys
     import pydicom
+
     if len(sys.argv) != 2:
         print("Please supply a dicom file name:\n")
         print(usage)
         sys.exit(-1)
     root = tkinter_tix.Tk()
-    root.title("DICOM tree viewer - "+sys.argv[1])
+    root.title("DICOM tree viewer - " + sys.argv[1])
     root.geometry("{0:d}x{1:d}+{2:d}+{3:d}".format(1200, 900, 0, 0))
 
     RunTree(root, sys.argv[1])

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Dicom Study IOD
-'''
+"""
 from pydicom.config import logger
+
 from series import Series
 
 
@@ -14,7 +15,7 @@ class Study(object):
 
     def __repr__(self):
         try:
-            output = "\tStudyIUID = %s:\n" % (self.dicom_dataset.StudyInstanceUID, )
+            output = f"\tStudyIUID = {self.dicom_dataset.StudyInstanceUID}:\n"
             for x in self.series:
                 output += repr(x)
             return output

@@ -13,26 +13,23 @@
 #        under Windows XP Professional 2002, and Mac OS X 10.5.5,
 #        using numpy 1.3.0 and a small random selection of MRI and
 #        CT images.
-'''
+"""
 View DICOM images from pydicom
 
-requires numpy:  http://numpy.scipy.org/
+requires numpy:  http://numpy.org/
 
 Usage:
 ------
 >>> import pydicom              # pydicom
 >>> import pydicom.contrib.pydicom_Tkinter as pydicom_Tkinter    # this module
 
->>> df = pydicom.read_file(filename)
+>>> df = pydicom.dcmread(filename)
 >>> pydicom_Tkinter.show_image(df)
-'''
+"""
 
 import tempfile
 import os
-
-from pydicom.compat import in_py2
-if in_py2:
-    import Tkinter as tkinter
+import tkinter
 
 have_numpy = True
 try:
@@ -43,14 +40,14 @@ except ImportError:
 
 
 def get_PGM_bytedata_string(arr):
-    '''Given a 2D numpy array as input write
+    """Given a 2D numpy array as input write
     gray-value image data in the PGM
     format into a byte string and return it.
 
     arr: single-byte unsigned int numpy array
     note: Tkinter's PhotoImage object seems to
     accept only single-byte data
-    '''
+    """
 
     if arr.dtype != np.uint8:
         raise ValueError
@@ -70,14 +67,14 @@ def get_PGM_from_numpy_arr(arr,
                            window_width,
                            lut_min=0,
                            lut_max=255):
-    '''real-valued numpy input  ->  PGM-image formatted byte string
+    """real-valued numpy input  ->  PGM-image formatted byte string
 
     arr: real-valued numpy array to display as grayscale image
     window_center, window_width: to define max/min values to be mapped to the
                                  lookup-table range. WC/WW scaling is done
                                  according to DICOM-3 specifications.
     lut_min, lut_max: min/max values of (PGM-) grayscale table: do not change
-    '''
+    """
 
     if np.isreal(arr).sum() != arr.size:
         raise ValueError
@@ -119,16 +116,16 @@ def get_PGM_from_numpy_arr(arr,
 
 
 def get_tkinter_photoimage_from_pydicom_image(data):
-    '''
+    """
     Wrap data.pixel_array in a Tkinter PhotoImage instance,
     after conversion into a PGM grayscale image.
 
     This will fail if the "numpy" module is not
     installed in the attempt of creating the data.pixel_array.
 
-    data:  object returned from pydicom.read_file()
+    data:  object returned from pydicom.dcmread()
     side effect: may leave a temporary .pgm file on disk
-    '''
+    """
 
     # get numpy array as representation of image data
     arr = data.pixel_array.astype(np.float64)
@@ -154,8 +151,6 @@ def get_tkinter_photoimage_from_pydicom_image(data):
     else:
         wc = (arr.max() + arr.min()) / 2.0
         ww = arr.max() - arr.min() + 1.0
-          
-
 
     # scale array to account for center, width and PGM grayscale range,
     # and wrap into PGM formatted ((byte-) string
@@ -191,16 +186,16 @@ def get_tkinter_photoimage_from_pydicom_image(data):
 
 
 def show_image(data, block=True, master=None):
-    '''
+    """
     Get minimal Tkinter GUI and display a pydicom data.pixel_array
 
-    data: object returned from pydicom.read_file()
+    data: object returned from pydicom.dcmread()
     block: if True run Tk mainloop() to show the image
     master: use with block==False and an existing
     Tk widget as parent widget
 
     side effects: may leave a temporary .pgm file on disk
-    '''
+    """
     frame = tkinter.Frame(master=master, background='#000')
     if 'SeriesDescription' in data and 'InstanceNumber' in data:
         title = ', '.join(('Ser: ' + data.SeriesDescription,
