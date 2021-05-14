@@ -4,6 +4,8 @@ Created on Wed Mar 31 10:45:06 2021
 
 @author: Francisco Piqueras Guardiola
 @author: Fernando Hueso González
+
+Note: This code is designed to be run in spyder environment
 """
 import pydicom
 import matplotlib.pyplot as plt
