@@ -11,8 +11,6 @@ Show a dicom file using hierarchical tree
 Show a dicom file using a hierarchical tree in a graphical window.
 """
 
-from __future__ import print_function
-
 from pydicom import compat
 import tkinter.tix as tkinter_tix
 
