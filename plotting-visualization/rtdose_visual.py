@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
         dirs = os.listdir(path)
         for file in dirs:
-            if not os.path.isdir(file):
+            if not os.path.isdir(path + "/" + file):
                 ds = pydicom.dcmread(path + "/" + file, force=True)
                 if (
                     ds.file_meta.MediaStorageSOPClassUID
