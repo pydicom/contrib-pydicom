@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Dicom Image IOD
-'''
+"""
 from pydicom.config import logger
 
 
@@ -11,7 +11,7 @@ class Image(object):
 
     def __repr__(self):
         try:
-            output = "\t\t\tSOPInstanceUID = %s:\n" % (self.dicom_dataset.SOPInstanceUID, )
+            output = f"\t\t\tSOPInstanceUID = {self.dicom_dataset.SOPInstanceUID}:\n"
             return output
         except Exception as e:
             logger.debug("trouble getting Series data", exc_info=e)

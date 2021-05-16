@@ -31,12 +31,13 @@
 
 import pydicom
 import wx
-from pydicom import compat
+
 have_PIL = True
 try:
     import PIL.Image
 except ImportError:
     have_PIL = False
+
 have_numpy = True
 try:
     import numpy as np
@@ -135,11 +136,11 @@ class ImFrame(wx.Frame):
         event.Skip()
 
     def OnSize(self, event):
-        "Window 'size' event."
+        """Window 'size' event."""
         self.Refresh()
 
     def OnEraseBackground(self, event):
-        "Window 'erase background' event."
+        """Window 'erase background' event."""
         pass
 
     def populateTree(self, ds):
@@ -155,8 +156,8 @@ class ImFrame(wx.Frame):
     def recurse_tree(self, ds, parent, hide=False):
         """ order the dicom tags """
         for data_element in ds:
-            if isinstance(data_element.value, compat.text_type):
-                text = compat.text_type(data_element)
+            if isinstance(data_element.value, str):
+                text = str(data_element)
                 ip = self.dsTreeView.AppendItem(parent, text=text)
             else:
                 ip = self.dsTreeView.AppendItem(parent, text=str(data_element))
@@ -169,7 +170,7 @@ class ImFrame(wx.Frame):
                     parentNodeID = self.dsTreeView.AppendItem(ip, text=rjust)
                     self.recurse_tree(ds, parentNodeID)
 
-# --- Most of what is important happens below this line ---------------------
+    # --- Most of what is important happens below this line ---------------------
 
     def OnFileOpen(self, event):
         """Opens a selected file."""
@@ -182,7 +183,7 @@ class ImFrame(wx.Frame):
             self.show_file(imageFile, fullPath)
 
     def OnPaint(self, event):
-        "Window 'paint' event."
+        """Window 'paint' event."""
         dc = wx.PaintDC(self.imView)
         dc = wx.BufferedDC(dc)
 
@@ -306,7 +307,7 @@ class ImFrame(wx.Frame):
         careful not to pass a unicode string to read_file or it will
         give you 'fp object does not have a defer_size attribute,
         or some such."""
-        ds = pydicom.read_file(str(fullPath))
+        ds = pydicom.dcmread(str(fullPath))
 
         # change strings to unicode
         ds.decode()
