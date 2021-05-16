@@ -17,7 +17,7 @@ import sys
 #!/usr/bin/python
 
 
-# Here we define the functions that we are gona use in our program
+# Here we define the functions that we are going to use in our program
 def remove_keymap_conflicts(new_keys_set):
     """
     Removes possible conflicts created by the use of a key that already has an use in the plot.
