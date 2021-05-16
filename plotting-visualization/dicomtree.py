@@ -11,6 +11,7 @@ Show a dicom file using hierarchical tree
 Show a dicom file using a hierarchical tree in a graphical window.
 """
 
+
 import tkinter.tix as tkinter_tix
 
 print(__doc__)
@@ -53,10 +54,8 @@ def recurse_tree(tree, dataset, parent, hide=False):
     # order the dicom tags
     for data_element in dataset:
         node_id = parent + "." + hex(id(data_element))
-        if isinstance(data_element.value, str):
-            tree.hlist.add(node_id, text=str(data_element))
-        else:
-            tree.hlist.add(node_id, text=str(data_element))
+        tree.hlist.add(node_id, text=str(data_element))
+
         if hide:
             tree.hlist.hide_entry(node_id)
         if data_element.VR == "SQ":  # a sequence
