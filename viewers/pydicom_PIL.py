@@ -25,15 +25,15 @@ and Python Imaging Library:
 # Tested on Python 2.5.4 (32-bit) on Mac OS X 10.6
 #    using numpy 1.3.0 and PIL 1.1.7b1
 
-have_PIL = True
 try:
     import PIL.Image
+    have_PIL = True
 except ImportError:
     have_PIL = False
 
-have_numpy = True
 try:
     import numpy as np
+    have_numpy = True
 except ImportError:
     have_numpy = False
 
