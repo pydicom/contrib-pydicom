@@ -55,8 +55,8 @@ def get_LUT_value(dataset):
 def get_PIL_image(dataset,brightness_factor = 1.0):
     """Get Image object from Python Imaging Library(PIL)
 
-       Manipulate image brightness using brightness_factor parameter
-       Receives a float value
+       Manipulate image brightness using brightness_factor parameter,
+       receives a float value,
        Default = 1.0
        Brighter > 1.0 | Darker < 1.0 
 
