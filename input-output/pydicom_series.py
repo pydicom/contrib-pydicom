@@ -504,7 +504,7 @@ class DicomSeries(object):
 
         # Give patient name
         if 'PatientName' in info:
-            fields.append("" + info.PatientName)
+            fields.append(f"{info.PatientName}")
 
         # Also add dimensions
         if self.shape:
