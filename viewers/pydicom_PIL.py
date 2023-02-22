@@ -8,6 +8,9 @@ Usage:
 >>> ds = pydicom.dcmread("filename")
 >>> show_PIL(ds)
 
+Or from the command line:
+python pydicom_PIL.py <<filename>>
+
 Requires Numpy:
     http://numpy.scipy.org/
 
@@ -105,3 +108,33 @@ def show_PIL(dataset):
     """Display an image using the Python Imaging Library (PIL)"""
     im = get_PIL_image(dataset)
     im.show()
+
+
+if __name__ == '__main__':
+    import pydicom
+    import argparse
+    import sys
+    import os.path
+
+    # Set up argparser to parse the command-line arguments
+    class DefaultParser(argparse.ArgumentParser):
+        """Custom argparse class."""
+
+        def error(self, message):
+            """Default error handler."""
+            sys.stderr.write('error: %s\n' % message)
+            self.print_help()
+            sys.exit(2)
+
+    parser = DefaultParser(
+        description="View DICOM images using the Python Image Library.")
+    parser.add_argument(
+        "filename", help="Filename of DICOM image")
+
+    args = parser.parse_args()
+
+    if os.path.isfile(args.filename):
+        ds = pydicom.read_file(args.filename)
+        show_PIL(ds)
+    else:
+        parser.error('%s is not a valid file.' % args.filename)
